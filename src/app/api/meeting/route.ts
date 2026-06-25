@@ -26,10 +26,12 @@ export async function POST(req: Request) {
     let type = "text";
     let filename = "";
     let textContent = "";
+    let userName = "";
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       type = (formData.get("type") as string) || "text";
+      userName = (formData.get("userName") as string) || "";
 
       if (type === "pdf") {
         const file = formData.get("file") as File;
@@ -51,7 +53,7 @@ export async function POST(req: Request) {
         } catch (pdfErr: any) {
           console.error("PDF Parsing error, using metadata-only fallback:", pdfErr);
           // Standard mock text if PDF parse fails
-          textContent = `PDF Document Name: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n(Note: PDF text extractor encountered an error parsing the PDF binary, so the file outline has been synthesized from metadata.)\n\nThis is a mock tournament setup briefing. We are planning the Valorant Arena Cup and the BGMI Campus Clash. Brackets must be completed. Aditya is in charge. Deadline is 7:00 PM IST today.`;
+          textContent = `PDF Document Name: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\n(Note: PDF text extractor encountered an error parsing the PDF binary, so the file outline has been synthesized from metadata.)\n\nThis is a mock tournament setup briefing. We are planning the Valorant Arena Cup and the BGMI Campus Clash. Brackets must be completed. ${userName || "Admin"} is in charge. Deadline is 7:00 PM IST today.`;
         }
       } else {
         textContent = (formData.get("text") as string) || "";
@@ -61,12 +63,14 @@ export async function POST(req: Request) {
       type = json.type || "text";
       textContent = json.text || "";
       filename = json.filename || "";
+      userName = json.userName || "";
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
 
     // Offline local fallback generator
     const generateLocalFallback = (type: string, filename?: string, content?: string) => {
+      const fallbackUserName = userName || "Admin";
       if (type === "pdf") {
         const nameLower = (filename || "document.pdf").toLowerCase();
         let game = "General Esports";
@@ -91,7 +95,7 @@ export async function POST(req: Request) {
           actionItems: [
             { text: "Verify bracket seedings and contact squads with pending roster profiles", assignee: "Referee Team", priority: "High" },
             { text: "Update regional server routing config to mitigate ping spikes", assignee: "Technical Ops", priority: "Medium" },
-            { text: "Audit PDF registration sheets and upload output log to main portal", assignee: "Aditya Verma", priority: "Low" }
+            { text: "Audit PDF registration sheets and upload output log to main portal", assignee: fallbackUserName, priority: "Low" }
           ],
           details: [
             { label: "Document Name", value: filename || "document.pdf" },
@@ -138,7 +142,7 @@ JSON Response Schema:
   "actionItems": [
     {
       "text": "description of the action item",
-      "assignee": "name of person/group responsible (e.g. Aditya, Referees, Team Captains, Technical Ops)",
+      "assignee": "name of person/group responsible (e.g. ${userName || 'Admin'}, Referees, Team Captains, Technical Ops)",
       "priority": "High" | "Medium" | "Low"
     }
   ],

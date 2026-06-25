@@ -189,7 +189,7 @@ export default function SignupPage() {
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Aditya Verma"
+                placeholder="Your full name"
                 className="w-full bg-[#050505] border border-zinc-900 focus:border-[#7C3AED]/40 rounded-xl pl-10 pr-4 py-2.5 text-xs text-zinc-300 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#7C3AED]/20 transition-all font-sans"
                 suppressHydrationWarning
               />

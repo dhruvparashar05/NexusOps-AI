@@ -22,8 +22,9 @@ if (typeof global !== "undefined") {
   }
 }
 
-function generateLocalChatFallback(prompt: string, knowledgeContext: string, errorDetail: string) {
+function generateLocalChatFallback(prompt: string, knowledgeContext: string, errorDetail: string, userName?: string) {
   const query = prompt.toLowerCase().trim();
+  const userDisplayName = userName || "Admin";
   
   let action = "NONE";
   let parameters: any = {};
@@ -134,9 +135,9 @@ function generateLocalChatFallback(prompt: string, knowledgeContext: string, err
     }
     
     if (matchFound) {
-      replyText = `✨ **Offline Fallback Copilot Mode** (Gemini API 503 Throttling - Rulebook scan used)\n\nAdler, I found a matching rule layout inside your local knowledge files:\n\n${snippet}\n\n*Note: Generative API queries are throttled, but local indexing continues to serve verified ground-truth contexts.*`;
+      replyText = `✨ **Offline Fallback Copilot Mode** (Gemini API 503 Throttling - Rulebook scan used)\n\n${userDisplayName}, I found a matching rule layout inside your local knowledge files:\n\n${snippet}\n\n*Note: Generative API queries are throttled, but local indexing continues to serve verified ground-truth contexts.*`;
     } else {
-      replyText = `✨ **Offline Fallback Copilot Mode** (Gemini API 503 Throttling)\n\nAdler, the generative language server is currently experiencing temporary high demand and returned a **503 Service Unavailable** status. \n\nI am currently operating in offline mode. If you need to make changes, I can parse commands to **create tournaments**, **navigate screens**, **post alerts**, or **search rulebooks** using rule-based local heuristics. \n\nHow would you like to proceed?`;
+      replyText = `✨ **Offline Fallback Copilot Mode** (Gemini API 503 Throttling)\n\n${userDisplayName}, the generative language server is currently experiencing temporary high demand and returned a **503 Service Unavailable** status. \n\nI am currently operating in offline mode. If you need to make changes, I can parse commands to **create tournaments**, **navigate screens**, **post alerts**, or **search rulebooks** using rule-based local heuristics. \n\nHow would you like to proceed?`;
     }
   }
   
@@ -145,7 +146,7 @@ function generateLocalChatFallback(prompt: string, knowledgeContext: string, err
 
 export async function POST(req: Request) {
   try {
-    const { prompt } = await req.json();
+    const { prompt, userName, orgName } = await req.json();
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE") {
@@ -187,9 +188,10 @@ export async function POST(req: Request) {
       console.error("Failed to read knowledge base files:", e);
     }
 
+    const userDisplayName = userName || "Admin";
     const systemPrompt = `You are NEXUSOPS AI Copilot, a powerful operations assistant for a SaaS gaming tournament and event dashboard.
-The user is Adler/Aditya, the administrator of the dashboard.
-Your job is to assist Adler by executing natural language commands and replying to their queries.
+The user is ${userDisplayName}, the administrator of the dashboard.
+Your job is to assist ${userDisplayName} by executing natural language commands and replying to their queries.
 
 You MUST respond strictly in JSON matching the following schema. Do NOT include any markdown code blocks (like \`\`\`json ... \`\`\`) or extra text outside the JSON. The JSON must be parseable directly.
 
@@ -243,7 +245,7 @@ Make sure your replyText is professional, using bullet points or markdown boldin
     if (!apiResponse.ok) {
       const errorText = await apiResponse.text();
       console.warn("Gemini API call failed, using local offline fallback:", apiResponse.status, errorText);
-      const fallback = generateLocalChatFallback(prompt, knowledgeContext, `Status: ${apiResponse.status}`);
+      const fallback = generateLocalChatFallback(prompt, knowledgeContext, `Status: ${apiResponse.status}`, userName);
       return Response.json(fallback);
     }
 
@@ -287,12 +289,14 @@ Make sure your replyText is professional, using bullet points or markdown boldin
     console.error("Internal Server Error in Chat API, using local fallback:", err);
     // Safe parse prompt to provide graceful offline fallback
     let localPrompt = "help";
+    let localUserName = "Admin";
     try {
       const clonedReq = req.clone();
       const body = await clonedReq.json();
       if (body?.prompt) localPrompt = body.prompt;
+      if (body?.userName) localUserName = body.userName;
     } catch (_) {}
-    const fallback = generateLocalChatFallback(localPrompt, "", `Network Error: ${err?.message || err}`);
+    const fallback = generateLocalChatFallback(localPrompt, "", `Network Error: ${err?.message || err}`, localUserName);
     return Response.json(fallback);
   }
 }

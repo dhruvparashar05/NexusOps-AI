@@ -41,6 +41,7 @@ interface Toast {
   text: string;
 }
 
+
 interface DashboardContextType {
   isMounted: boolean;
   sidebarTab: string;
@@ -406,7 +407,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
                   text: "Don't forget to join by 7:30 PM. All the best!",
                   date: shortFormatted,
                   time: "10:30 AM",
-                  creator: finalProfile?.name || "Aditya Verma",
+                  creator: finalProfile?.name || userProfile?.name || "Admin",
                   code: "discord",
                   emoji: "🎮",
                   user_id: user.id
@@ -428,7 +429,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
                   text: "Total prize pool of ₹50,000. Register now!",
                   date: "May 17, 2026",
                   time: "09:15 PM",
-                  creator: finalProfile?.name || "Aditya Verma",
+                  creator: finalProfile?.name || userProfile?.name || "Admin",
                   code: "telegram",
                   emoji: "🏆",
                   user_id: user.id
@@ -610,7 +611,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       text: "Don't forget to join by 7:30 PM. All the best!",
       date: "May 20, 2026",
       time: "10:30 AM",
-      creator: "Aditya Verma",
+      creator: "Admin",
       code: "discord",
       emoji: "🎮"
     },
@@ -632,7 +633,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       text: "Total prize pool of ₹50,000. Register now!",
       date: "May 17, 2026",
       time: "09:15 PM",
-      creator: "Aditya Verma",
+      creator: "Admin",
       code: "telegram",
       emoji: "🏆"
     }
@@ -653,6 +654,19 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       prev.map((ann) => (ann.id === "ann-1" ? { ...ann, date: shortFormatted } : ann))
     );
   }, []);
+
+  // Update default announcements creator when user profile is loaded
+  useEffect(() => {
+    if (userProfile?.name) {
+      setAnnouncements((prev) =>
+        prev.map((ann) =>
+          ann.creator === "Admin" || ann.creator === "Aditya Verma"
+            ? { ...ann, creator: userProfile.name }
+            : ann
+        )
+      );
+    }
+  }, [userProfile]);
 
   // Synchronize dashboard statistics and donut data reactively based on the events list
   useEffect(() => {
@@ -880,6 +894,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     try {
       const formData = new FormData();
       formData.append("type", meetingInputType);
+      formData.append("userName", userProfile?.name || "Admin");
       if (meetingInputType === "pdf" && uploadedPdfFile) {
         formData.append("file", uploadedPdfFile);
       } else {
@@ -1062,7 +1077,11 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: query }),
+        body: JSON.stringify({
+          prompt: query,
+          userName: userProfile?.name || "Admin",
+          orgName: userProfile?.organization_name || "NexusOps Hub"
+        }),
       });
 
       if (!res.ok) {
@@ -1091,7 +1110,11 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: userPrompt }),
+        body: JSON.stringify({
+          prompt: userPrompt,
+          userName: userProfile?.name || "Admin",
+          orgName: userProfile?.organization_name || "NexusOps Hub"
+        }),
       });
 
       if (!res.ok) {

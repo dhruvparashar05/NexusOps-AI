@@ -876,7 +876,7 @@ export default function DashboardPage() {
                       <button
                         onClick={() => {
                           setMeetingInputType("text");
-                          setMeetingText("We held our Valorant Spring Cup sync today. Aditya Verma and Referee Rohit checked brackets. Roster submissions are lagging; the deadline is strictly locked to 7:00 PM IST today for the 128 seeded teams. A rules dispute from last week was discussed: we agreed to enforce the MR3 overtime rules on all map pools (maps are Bind, Ascent, Haven). Rohit will ping Team Heretics to get their roster in before cutoff, and Aditya will update the discord rulebook.");
+                          setMeetingText(`We held our Valorant Spring Cup sync today. ${userProfile?.name || "Admin"} and Referee Rohit checked brackets. Roster submissions are lagging; the deadline is strictly locked to 7:00 PM IST today for the 128 seeded teams. A rules dispute from last week was discussed: we agreed to enforce the MR3 overtime rules on all map pools (maps are Bind, Ascent, Haven). Rohit will ping Team Heretics to get their roster in before cutoff, and ${userProfile?.name || "Admin"} will update the discord rulebook.`);
                         }}
                         className="w-full text-left bg-[#050505] hover:bg-zinc-950 border border-zinc-900 hover:border-zinc-800 p-2 rounded-lg text-[10px] text-[#c084fc] font-medium transition-colors"
                       >
@@ -885,7 +885,7 @@ export default function DashboardPage() {
                       <button
                         onClick={() => {
                           setMeetingInputType("text");
-                          setMeetingText("BGMI Campus Clash organizer sync notes: Aditya Verma reported that slot list assignments are completed for Lobby A and Lobby B. There is a conflict on team placement for GodLike Esports. Aditya will move GodLike to Slot 12. Referee Aditya confirmed the points table spreadsheet must be published by tomorrow at 10 AM. We also agreed to add 1 referee observer per squad to monitor ping spikes and report logs.");
+                          setMeetingText(`BGMI Campus Clash organizer sync notes: ${userProfile?.name || "Admin"} reported that slot list assignments are completed for Lobby A and Lobby B. There is a conflict on team placement for GodLike Esports. ${userProfile?.name || "Admin"} will move GodLike to Slot 12. Referee ${userProfile?.name || "Admin"} confirmed the points table spreadsheet must be published by tomorrow at 10 AM. We also agreed to add 1 referee observer per squad to monitor ping spikes and report logs.`);
                         }}
                         className="w-full text-left bg-[#050505] hover:bg-zinc-950 border border-zinc-900 hover:border-zinc-800 p-2 rounded-lg text-[10px] text-[#c084fc] font-medium transition-colors"
                       >
