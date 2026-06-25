@@ -22,8 +22,6 @@ if (typeof global !== "undefined") {
   }
 }
 
-const pdf = eval("require('pdf-parse')");
-
 function generateLocalChatFallback(prompt: string, knowledgeContext: string, errorDetail: string) {
   const query = prompt.toLowerCase().trim();
   
@@ -171,6 +169,7 @@ export async function POST(req: Request) {
             knowledgeContext += `\n=== FILE: ${file} ===\n${content}\n`;
           } else if (ext === ".pdf") {
             try {
+              const pdf = eval("require('pdf-parse')");
               const dataBuffer = fs.readFileSync(filePath);
               const uint8data = new Uint8Array(dataBuffer);
               const parser = new pdf.PDFParse({ data: uint8data });

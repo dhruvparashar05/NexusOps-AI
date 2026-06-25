@@ -20,8 +20,6 @@ if (typeof global !== "undefined") {
   }
 }
 
-const pdf = eval("require('pdf-parse')");
-
 export async function POST(req: Request) {
   try {
     const contentType = req.headers.get("content-type") || "";
@@ -42,6 +40,7 @@ export async function POST(req: Request) {
 
         // Parse PDF file
         try {
+          const pdf = eval("require('pdf-parse')");
           const arrayBuffer = await file.arrayBuffer();
           const uint8data = new Uint8Array(arrayBuffer);
           const parser = new pdf.PDFParse({ data: uint8data });
